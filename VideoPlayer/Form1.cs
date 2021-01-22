@@ -27,6 +27,7 @@ namespace VideoPlayer
         }
         bool maximized = false;
         string username = "Lakshith";
+        string room = "default";
 
         IFirebaseConfig ifc = new FirebaseConfig()
         {
@@ -78,11 +79,14 @@ namespace VideoPlayer
         private void Form1_Load(object sender, EventArgs e)
         {
             this.FormBorderStyle = FormBorderStyle.None;
+            panel_main.Dock = DockStyle.Fill;
             ShowInputDialog(ref username);
+            ShowInputDialog(ref room);
             try
             {
                 client = new FirebaseClient(ifc);
-                client.Set<string>("chat/" + username, "init");
+                client.Set<string>(room+"/chat/" + username, "init");
+                client.Set<string>(room + "/media/player/isPLaying/" , "no");
                 chatData.Add(username, "init");
                 updateData();
             }
@@ -97,7 +101,7 @@ namespace VideoPlayer
             while (true)
             {
                 //await Task.Delay(500);
-                FirebaseResponse res = await client.GetAsync("media/player/");
+                FirebaseResponse res = await client.GetAsync(room+"/media/player/");
                 data = JsonConvert.DeserializeObject<Dictionary<string, string>>(res.Body.ToString());
                 if (data.ElementAt(0).Value == "yes")
                 {
@@ -110,7 +114,7 @@ namespace VideoPlayer
 
 
                 //chat 
-                res = await client.GetAsync("chat/");
+                res = await client.GetAsync(room+"/chat/");
                 data = JsonConvert.DeserializeObject<Dictionary<string, string>>(res.Body.ToString());
                 for (int x = 0; x < data.Count; x++)
                 {
@@ -129,14 +133,32 @@ namespace VideoPlayer
                 if (chatData[user] != text)
                 {
                     chatData[user] = text;
-                    chat.Text += user + " : " + text + "\n";
+                    //chat.Text += user + " : " + text + "\n";
+                    addText(user,text);
                 }
             }
             catch (KeyNotFoundException)
             {
                 chatData.Add(user, text);
-                chat.Text += user + " : " + text + "\n";
+                //chat.Text += user + " : " + text + "\n";
+                addText(user,text);
             }
+        }
+
+        private void addText(string user,string text)
+        {
+            Label lbl_text = new Label();
+            Label lbl_user = new Label();
+            lbl_text.Text = text;
+            lbl_user.Text = user;
+            lbl_user.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            lbl_text.Font = new System.Drawing.Font("Microsoft YaHei Light", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            if (user == username) lbl_user.ForeColor = Color.Blue;
+            else lbl_user.ForeColor = Color.Red;
+            lbl_user.AutoSize = true;
+            lbl_text.AutoSize = true;
+            chatPanel.Controls.Add(lbl_user);
+            chatPanel.Controls.Add(lbl_text);
         }
 
         private void axWindowsMediaPlayer1_KeyPressEvent(object sender, AxWMPLib._WMPOCXEvents_KeyPressEvent e)
@@ -212,7 +234,7 @@ namespace VideoPlayer
         {
             try
             {
-                client.Set<string>("media/player/isPlaying", "yes");
+                client.Set<string>(room+"/media/player/isPlaying", "yes");
             }
             catch { }
             input.Ctlcontrols.play();
@@ -237,7 +259,7 @@ namespace VideoPlayer
         {
             try
             {
-                client.Set<string>("media/player/isPlaying", "no");
+                client.Set<string>(room+"/media/player/isPlaying", "no");
             }
             catch { }
             input.Ctlcontrols.pause();
@@ -247,7 +269,7 @@ namespace VideoPlayer
         {
             //chat.Text += txtin.Text + "\n";
             client = new FirebaseClient(ifc);
-            client.Set<string>("chat/" + username, txtin.Text);
+            client.Set<string>(room+"/chat/" + username, txtin.Text);
             txtin.Text = "";
         }
 
@@ -256,7 +278,7 @@ namespace VideoPlayer
             if (e.KeyChar == (char)13)
             {
                 client = new FirebaseClient(ifc);
-                client.Set<string>("chat/" + username, txtin.Text);
+                client.Set<string>(room+"/chat/" + username, txtin.Text);
                 txtin.Text = "";
             }
         }
