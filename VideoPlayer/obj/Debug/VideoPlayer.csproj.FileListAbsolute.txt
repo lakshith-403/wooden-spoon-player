@@ -72,3 +72,4 @@ G:\Repositories\wooden-spoon-player\VideoPlayer\obj\Debug\VideoPlayer.applicatio
 G:\Repositories\wooden-spoon-player\VideoPlayer\obj\Debug\VideoPlayer.csproj.CopyComplete
 G:\Repositories\wooden-spoon-player\VideoPlayer\obj\Debug\VideoPlayer.exe
 G:\Repositories\wooden-spoon-player\VideoPlayer\obj\Debug\VideoPlayer.pdb
+G:\Repositories\wooden-spoon-player\VideoPlayer\obj\Debug\VideoPlayer.login.resources

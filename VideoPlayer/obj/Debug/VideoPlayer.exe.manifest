@@ -186,14 +186,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="VideoPlayer.exe" size="88536">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="VideoPlayer.exe" size="343000">
       <assemblyIdentity name="VideoPlayer" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>VAbRPZqPv7GmwKii/L6W9lSyJxM9jTz/rW6cz2z4LVw=</dsig:DigestValue>
+        <dsig:DigestValue>r3Lo4k5PbmwQ4ngCpaozk2h5KrvsPc02USz6ORP1+t4=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

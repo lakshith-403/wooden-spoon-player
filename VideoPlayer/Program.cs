@@ -16,7 +16,7 @@ namespace VideoPlayer
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new panel_player());
+            Application.Run(new login());
         }
     }
 }
