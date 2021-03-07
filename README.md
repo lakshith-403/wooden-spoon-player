@@ -15,3 +15,9 @@
   * press 'CTLR + C' to toggle the contol bar
  
  only the latest text from each user is saved on the cloud therefore  users has to be online at the time of a conversation to view the full conversation
+
+![](https://i.imgur.com/3Ky0E9m.png)
+
+![](https://i.imgur.com/BYjfS0N.png)
+
+![](https://i.imgur.com/abDTFMN.png)
