@@ -19,7 +19,7 @@ using MetroFramework.Forms;
 
 namespace VideoPlayer
 {
-    public partial class panel_player : MetroForm
+    public partial class panel_player : Form
     {
         public panel_player()
         {
@@ -27,7 +27,6 @@ namespace VideoPlayer
         }
         bool maximized = false;
         string username = "Lakshith";
-        string room = "default";
 
         IFirebaseConfig ifc = new FirebaseConfig()
         {
@@ -79,14 +78,11 @@ namespace VideoPlayer
         private void Form1_Load(object sender, EventArgs e)
         {
             this.FormBorderStyle = FormBorderStyle.None;
-            panel_main.Dock = DockStyle.Fill;
-            username = VideoPlayer.data.username;
-            room = VideoPlayer.data.room;
+            ShowInputDialog(ref username);
             try
             {
                 client = new FirebaseClient(ifc);
-                client.Set<string>(room+"/chat/" + username, "init");
-                client.Set<string>(room + "/media/player/isPlaying/" , "no");
+                client.Set<string>("chat/" + username, "init");
                 chatData.Add(username, "init");
                 updateData();
             }
@@ -101,34 +97,20 @@ namespace VideoPlayer
             while (true)
             {
                 //await Task.Delay(500);
-                FirebaseResponse res = await client.GetAsync(room+"/media/player/");
+                FirebaseResponse res = await client.GetAsync("media/player/");
                 data = JsonConvert.DeserializeObject<Dictionary<string, string>>(res.Body.ToString());
                 if (data.ElementAt(0).Value == "yes")
                 {
-                    try
-                    {
-                        input.Ctlcontrols.play();
-                    }
-                    catch
-                    {
-
-                    }
+                    input.Ctlcontrols.play();
                 }
                 else
                 {
-                    try
-                    {
-                        input.Ctlcontrols.pause();
-                    }
-                    catch
-                    {
-
-                    }
+                    input.Ctlcontrols.pause();
                 }
 
 
                 //chat 
-                res = await client.GetAsync(room+"/chat/");
+                res = await client.GetAsync("chat/");
                 data = JsonConvert.DeserializeObject<Dictionary<string, string>>(res.Body.ToString());
                 for (int x = 0; x < data.Count; x++)
                 {
@@ -147,32 +129,14 @@ namespace VideoPlayer
                 if (chatData[user] != text)
                 {
                     chatData[user] = text;
-                    //chat.Text += user + " : " + text + "\n";
-                    addText(user,text);
+                    chat.Text += user + " : " + text + "\n";
                 }
             }
             catch (KeyNotFoundException)
             {
                 chatData.Add(user, text);
-                //chat.Text += user + " : " + text + "\n";
-                addText(user,text);
+                chat.Text += user + " : " + text + "\n";
             }
-        }
-
-        private void addText(string user,string text)
-        {
-            Label lbl_text = new Label();
-            Label lbl_user = new Label();
-            lbl_text.Text = text;
-            lbl_user.Text = user;
-            lbl_user.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            lbl_text.Font = new System.Drawing.Font("Microsoft YaHei Light", 16F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            if (user == username) lbl_user.ForeColor = Color.Blue;
-            else lbl_user.ForeColor = Color.Red;
-            lbl_user.AutoSize = true;
-            lbl_text.AutoSize = true;
-            chatPanel.Controls.Add(lbl_user);
-            chatPanel.Controls.Add(lbl_text);
         }
 
         private void axWindowsMediaPlayer1_KeyPressEvent(object sender, AxWMPLib._WMPOCXEvents_KeyPressEvent e)
@@ -199,19 +163,6 @@ namespace VideoPlayer
                 {
                     this.WindowState = FormWindowState.Maximized;
                     maximized = true;
-                    if (input.playState == WMPLib.WMPPlayState.wmppsPlaying)
-
-                    {
-
-                        input.stretchToFit = true;
-
-                        input.Width *= 1;
-
-                        input.Height *= 1;
-
-                        input.fullScreen = true;
-
-                    }
                 }
                 else
                 {
@@ -224,23 +175,47 @@ namespace VideoPlayer
         private void button1_Click(object sender, EventArgs e)
         {
           
-           
+            TableLayoutColumnStyleCollection styles = this.panel_main.ColumnStyles;
+            int i = 0;
+            foreach (ColumnStyle style in styles)
+            {
+                int perc;
+                if (i++ % 2 == 0) perc = 80;
+                else perc = 20;
+                style.SizeType = SizeType.Percent;
+                if (style.Width == 80) perc = 100;
+                else if (style.Width == 20) perc = 0;
+                style.Width = perc;
+                Console.WriteLine(style.Width);
+            }
           
         }
 
         private void button6_Click(object sender, EventArgs e)
         {
-            
+            this.Close();
         }
 
         private void button3_Click(object sender, EventArgs e)
         {
-            
+            OpenFileDialog ofd = new OpenFileDialog();
+            ofd.Filter = "Videos | *.mp4;*.wav;*.avi | all files | *.*";
+            if (ofd.ShowDialog() == DialogResult.OK)
+            {
+                input.settings.autoStart = true;
+                input.URL = ofd.FileName;
+                input.Ctlcontrols.play();
+            }
         }
 
         private void button4_Click(object sender, EventArgs e)
         {
-           
+            try
+            {
+                client.Set<string>("media/player/isPlaying", "yes");
+            }
+            catch { }
+            input.Ctlcontrols.play();
         }
 
         private void tableLayoutPanel1_Paint(object sender, PaintEventArgs e)
@@ -260,12 +235,20 @@ namespace VideoPlayer
 
         private void btn_pause_Click(object sender, EventArgs e)
         {
-            
+            try
+            {
+                client.Set<string>("media/player/isPlaying", "no");
+            }
+            catch { }
+            input.Ctlcontrols.pause();
         }
 
         private void btn_send_Click(object sender, EventArgs e)
         {
-            
+            //chat.Text += txtin.Text + "\n";
+            client = new FirebaseClient(ifc);
+            client.Set<string>("chat/" + username, txtin.Text);
+            txtin.Text = "";
         }
 
         private void txtin_KeyPress(object sender, KeyPressEventArgs e)
@@ -273,91 +256,9 @@ namespace VideoPlayer
             if (e.KeyChar == (char)13)
             {
                 client = new FirebaseClient(ifc);
-                client.Set<string>(room+"/chat/" + username, txtin.Text);
+                client.Set<string>("chat/" + username, txtin.Text);
                 txtin.Text = "";
             }
-        }
-
-        private void metroButton1_Click(object sender, EventArgs e)
-        {
-            TableLayoutColumnStyleCollection styles = this.panel_main.ColumnStyles;
-            int i = 0;
-            foreach (ColumnStyle style in styles)
-            {
-                int perc;
-                if (i++ % 2 == 0) perc = 80;
-                else perc = 20;
-                style.SizeType = SizeType.Percent;
-                if (style.Width == 80) perc = 100;
-                else if (style.Width == 20) perc = 0;
-                style.Width = perc;
-                Console.WriteLine(style.Width);
-            }
-        }
-
-        private void metroTile1_Click(object sender, EventArgs e)
-        {
-            
-        }
-
-        private void metroTile2_Click(object sender, EventArgs e)
-        {
-           
-        }
-
-        private void metroTile3_Click(object sender, EventArgs e)
-        {
-            
-        }
-
-        private void metroTile4_Click(object sender, EventArgs e)
-        {
-            
-        }
-
-        private void pictureBox1_Click(object sender, EventArgs e)
-        {
-            OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Filter = "Videos | *.mp4;*.wav;*.avi | all files | *.*";
-            if (ofd.ShowDialog() == DialogResult.OK)
-            {
-                input.settings.autoStart = true;
-                input.URL = ofd.FileName;
-                input.Ctlcontrols.play();
-            }
-        }
-
-        private void pictureBox2_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                client.Set<string>(room + "/media/player/isPlaying", "yes");
-            }
-            catch { }
-            input.Ctlcontrols.play();
-        }
-
-        private void pictureBox3_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                client.Set<string>(room + "/media/player/isPlaying", "no");
-            }
-            catch { }
-            input.Ctlcontrols.pause();
-        }
-
-        private void pictureBox4_Click(object sender, EventArgs e)
-        {
-            System.Windows.Forms.Application.Exit();
-        }
-
-        private void pictureBox5_Click(object sender, EventArgs e)
-        {
-            //chat.Text += txtin.Text + "\n";
-            client = new FirebaseClient(ifc);
-            client.Set<string>(room + "/chat/" + username, txtin.Text);
-            txtin.Text = "";
         }
     }
 }
